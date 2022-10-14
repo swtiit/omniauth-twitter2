@@ -19,7 +19,7 @@ module OmniAuth
       info do
         {
           name: raw_info["data"]["name"],
-          email: nil,
+          email: raw_info["data"]["email"],
           nickname: raw_info["data"]["username"],
           description: raw_info["data"]["description"],
           image: raw_info["data"]["profile_image_url"],
