@@ -18,14 +18,15 @@ module OmniAuth
 
       info do
         {
-          name: raw_info["data"]["name"],
-          email: raw_info["data"]["email"],
-          nickname: raw_info["data"]["username"],
-          description: raw_info["data"]["description"],
-          image: raw_info["data"]["profile_image_url"],
-          urls: {
-            Website: raw_info["data"]["url"],
-            Twitter: "https://twitter.com/#{raw_info["data"]["username"]}"
+          :nickname => raw_info['screen_name'],
+          :name => raw_info['name'],
+          :email => raw_info["email"],
+          :location => raw_info['location'],
+          :image => image_url,
+          :description => raw_info['description'],
+          :urls => {
+            'Website' => raw_info['url'],
+            'Twitter' => "https://twitter.com/#{raw_info['screen_name']}",
           }
         }
       end
@@ -34,13 +35,19 @@ module OmniAuth
         { raw_info: raw_info }
       end
 
+      # def raw_info
+      #   @raw_info ||= access_token.get(
+      #     "/2/users/me?" \
+      #     "&user.fields=created_at,description,entities,id,location,name,pinned_tweet_id," \
+      #     "profile_image_url,protected,public_metrics,url,username,verified,withheld",
+      #     { headers: { "Authorization" => "Bearer #{access_token.token}" } }
+      #   ).parsed || {}
+      # end
+
       def raw_info
-        @raw_info ||= access_token.get(
-          "/2/users/me?" \
-          "&user.fields=created_at,description,entities,id,location,name,pinned_tweet_id," \
-          "profile_image_url,protected,public_metrics,url,username,verified,withheld",
-          { headers: { "Authorization" => "Bearer #{access_token.token}" } }
-        ).parsed || {}
+        @raw_info ||= JSON.load(access_token.get('/1.1/account/verify_credentials.json?include_entities=false&skip_status=true&include_email=true').body)
+      rescue ::Errno::ETIMEDOUT
+        raise ::Timeout::Error
       end
 
       # https://github.com/zquestz/omniauth-google-oauth2/blob/475efe41ecfcf04b63921bd723ccf6fad429d1b1/lib/omniauth/strategies/google_oauth2.rb#L105
